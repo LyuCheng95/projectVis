@@ -5,21 +5,22 @@ class Task:
     taskName = ''
     duration = 0
     prerequisites = []
-    startDate = datetime.datetime(2018,11,17)
-    endDate = datetime.datetime(2018,11,17)
+    startDate = datetime.datetime(2018,1,1)
+    endDate = datetime.datetime(2018,1,1)
     maxDelay = 0
+    prepareTime = 0
     
 
 
-    def __init__(self, taskName = '', duration = 0, prerequisites = [], startDate = datetime.datetime(2018, 11, 17)):
+    def __init__(self, taskName = '', duration = 0, prerequisites = [], startDate = datetime.datetime(2018, 1, 1)):
         self.taskName = taskName
-        self.duration = duration
-        self.prerequisites = prerequisites
+        self.duration = int(duration)
+        # filter out empty prerequisites
+        self.prerequisites = prerequisites 
         self.startDate = startDate 
         # compute endDate
         if duration > 0:
-            endDate = startDate + timedelta(days=duration)
-
+            self.endDate = startDate + timedelta(days=duration)
 
     def setTaskName(self, taskName):
         self.taskName = taskName
@@ -51,8 +52,26 @@ class Task:
     def getOnCriticalPath(self):
         return self.onCriticalPath
 
-    def getMaxDelay(self, maxDelay):
+    def getMaxDelay(self):
         return self.maxDelay 
 
-    def toString(self):
-        return ('taskName = ' + self.taskName + ';\nduration = ' + self.duration + ';\nprerequisites = ' + ','.join(self.prerequisites) + ';\nstartDate = ' + self.startDate + ';\nonCriticalPath = ' + str(self.onCriticalPath) + '\n\n')
+    def getEndDate(self):
+        return self.endDate 
+    
+    def computePrepareTime(self):
+        if self.maxDelay == 0:
+            self.prepareTime = 2 
+        else:
+            self.prepareTime = 1
+
+    def printDetails(self):
+        return print(
+            'taskName = ', self.taskName, 
+            '\nduration = ', self.duration, 
+            '\nprerequisites = ', ','.join(self.prerequisites), 
+            '\nstartDate = ', self.startDate, 
+            '\nendDate = ', self.endDate, 
+            '\nmaxDelay = ', str(self.maxDelay), 
+            '\nprepareTime = ', self.prepareTime,
+            '\n'
+        )
