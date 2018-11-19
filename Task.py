@@ -9,18 +9,18 @@ class Task:
     endDate = datetime.datetime(2018,1,1)
     maxDelay = 0
     prepareTime = 0
-    
-
+    arrivalTime = datetime.datetime(2018,1,1)
 
     def __init__(self, taskName = '', duration = 0, prerequisites = [], startDate = datetime.datetime(2018, 1, 1)):
         self.taskName = taskName
         self.duration = int(duration)
-        # filter out empty prerequisites
         self.prerequisites = prerequisites 
         self.startDate = startDate 
         # compute endDate
         if duration > 0:
             self.endDate = startDate + timedelta(days=duration)
+        else:
+            self.endDate = startDate
 
     def setTaskName(self, taskName):
         self.taskName = taskName
@@ -42,7 +42,7 @@ class Task:
 
     def getDuration(self):
         return self.duration
-        
+
     def getPrerequisites(self):
         return self.prerequisites
 
@@ -57,12 +57,15 @@ class Task:
 
     def getEndDate(self):
         return self.endDate 
-    
+
     def computePrepareTime(self):
         if self.maxDelay == 0:
             self.prepareTime = 2 
         else:
             self.prepareTime = 1
+
+    def computeArrivalTime(self):
+        self.arrivalTime = self.startDate - timedelta(days = self.prepareTime)
 
     def printDetails(self):
         return print(
@@ -73,5 +76,6 @@ class Task:
             '\nendDate = ', self.endDate, 
             '\nmaxDelay = ', str(self.maxDelay), 
             '\nprepareTime = ', self.prepareTime,
+            '\narrivalTime = ', self.arrivalTime,
             '\n'
         )

@@ -7,13 +7,12 @@ import matplotlib.pyplot as plt
 from collections import OrderedDict
 from collections import deque
 
-inputFileName = 'InputData.csv'
+inputFileName = './InputData.csv'
 
 
 def prepareProjectGraph(fileName):
     # initialize project graph
     project = nx.DiGraph()
-
     # read file
     with open(fileName) as csvfile:
         reader = csv.DictReader(csvfile)
@@ -38,29 +37,25 @@ def prepareProjectGraph(fileName):
                 project.add_edge(prerequisite, taskName, transition = transition)
     return project
 
-def getSortedEndTasks(project):
-    leafTasks = {} 
+def getEndTasks(project):
+    endTasks = [] 
 
     # find all leaf nodes
     for item in project.out_degree:
         if item[1] == 0:
-            leafTasks[item[0]] = None 
-
-    # assign end date 
-    for nodeName in leafTasks:
-        endDate = project.nodes[nodeName]['task'].getEndDate()
-        leafTasks[nodeName] = endDate
-
-    # sort the task according to timestamp
-    sortedTasks = OrderedDict(sorted(leafTasks.items()))
-    endTasks = list(sortedTasks.keys())
-    return endTasks 
+            endTasks.append(item[0]) 
+    return endTasks
 
 def getProjectEndDate(project, endTasks):
-    return project.nodes[endTasks[0]]['task'].getEndDate()
+    # dictonary task name : end date
+    sortedTasks = {}
+    for taskName in endTasks:
+        sortedTasks[taskName] = project.nodes[taskName]['task'].getEndDate()
+    sortedTasks = OrderedDict(sorted(sortedTasks.items(), key=lambda x: x[1]))
+    return sortedTasks[list(sortedTasks.keys())[-1]] 
 
 def computeMaxDelay(project):
-    tasks = deque(getSortedEndTasks(project))
+    tasks = deque(getEndTasks(project))
     projectEndDate = getProjectEndDate(project, tasks)
     # dealing with each task, starting from end
     seen = set(tasks)
@@ -75,14 +70,14 @@ def computeMaxDelay(project):
             if succList:
                 # possibleDelay = gap + successor's maxDelay
                 # compare among possibleDelay from successors
-                maxDelay = 0
+                maxDelay = 10000
                 for successor in succList:
                     successorTask = project.nodes[successor]['task']
                     succStartDate = successorTask.getStartDate()
                     endDate = task.getEndDate()
                     gap = (succStartDate - endDate).days
                     possibleDelay = gap + successorTask.getMaxDelay()
-                    if possibleDelay > maxDelay:
+                    if possibleDelay < maxDelay:
                         maxDelay = possibleDelay
                 task.setMaxDelay(maxDelay)
             else:
@@ -95,12 +90,12 @@ def computeMaxDelay(project):
                 if prerequisite not in seen and prerequisite != '':
                     seen.add(prerequisite)
                     tasks.append(prerequisite) 
-            # maxDelay = 
-            # currTask.set
 
-def computePrepareTime(project):
+def computeArrivalTime(project):
     for taskName in project:
-        project.nodes[taskName]['task'].computePrepareTime()
+        task = project.nodes[taskName]['task']
+        task.computePrepareTime()
+        task.computeArrivalTime()
 
 def getCriticalPath(project):
     criticalPath = []
@@ -111,7 +106,7 @@ def getCriticalPath(project):
 
 project = prepareProjectGraph(inputFileName)
 computeMaxDelay(project)
-computePrepareTime(project)
+computeArrivalTime(project)
 criticalPath = getCriticalPath(project)
 for task in project.nodes:
     project.nodes[task]['task'].printDetails()
